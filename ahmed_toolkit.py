@@ -1,79 +1,108 @@
-import os, requests, random, string
-from pyfiglet import Figlet
-from rich import print as rprint
+import requests, warnings, datetime
+warnings.filterwarnings("ignore")
 
-def banner():
-    os.system("clear")
-    f = Figlet(font='slant')
-    name = input("اكتب الاسم للبنر: ")
-    if name == "": name = "Ahmed"
-    rprint(f"[bold cyan]{f.renderText(name)}[/bold cyan]")
-    rprint(f"[bold white]Made by {name} - Yemen Hacker[/bold white]")
-    input("\nاضغط Enter للرجوع...")
+print("--- Ahmed Toolkit V9 - ETHICAL HACKER ---")
+print("For Educational & Authorized Testing Only")
+site = input("\nEnter YOUR site: ")
 
-def ip_tracker():
-    os.system("clear")
-    rprint("[bold cyan]--- IP TRACKER ---[/bold cyan]")
-    ip = input("ادخل IP (Enter لتتبع نفسك): ")
-    try:
-        url = f"http://ip-api.com/json/{ip}"
-        d = requests.get(url, timeout=10).json()
-        if d['status'] == 'success':
-            rprint(f"[green]IP: {d['query']}\nCountry: {d['country']} - {d['city']}\nISP: {d['isp']}\nMap: https://maps.google.com/?q={d['lat']},{d['lon']}[/green]")
+if "127.0.0.1" in site or "localhost" in site:
+    if "http" not in site:
+        site = "http://" + site
+else:
+    if "http" not in site:
+        site = "https://" + site
+    print("WARNING: Make sure you own this site!")
+
+report = []
+report.append(f"Ahmed Toolkit V9 Report - {datetime.datetime.now()}")
+report.append(f"Target: {site}")
+report.append("="*60)
+
+try:
+    r = requests.get(site, timeout=10, verify=False)
+    h = r.headers
+    score = 0
+    print("\n[PHASE 1] Header Security Check")
+    print(f"Status: {r.status_code}")
+    
+    checks = ["Content-Security-Policy","X-Frame-Options","Strict-Transport-Security","X-Content-Type-Options","Referrer-Policy","Permissions-Policy","X-XSS-Protection"]
+    for ch in checks:
+        if ch in h:
+            print(f"[PASS] {ch}")
+            score+=10
+            report.append(f"[PASS] {ch}")
         else:
-            rprint("[red]IP غلط[/red]")
-    except:
-        rprint("[red]خطأ في النت[/red]")
-    input("\nاضغط Enter للرجوع...")
+            print(f"[FAIL] {ch}")
+            report.append(f"[FAIL] {ch}")
 
-def site_checker():
-    os.system("clear")
-    rprint("[bold cyan]--- SITE CHECKER ---[/bold cyan]")
-    site = input("ادخل الموقع (google.com): ")
-    if "http" not in site: site = "https://" + site
-    rprint(f"[yellow]فحص {site}...[/yellow]")
-    try:
-        r = requests.get(site, timeout=8)
-        rprint(f"[green]شغال! Code: {r.status_code} - Time: {r.elapsed.total_seconds()}s - Server: {r.headers.get('Server','hidden')}[/green]")
-    except:
-        rprint("[red]الموقع مطفي او غلط[/red]")
-    input("\nاضغط Enter للرجوع...")
-
-def password_gen():
-    os.system("clear")
-    rprint("[bold magenta]--- PASSWORD GENERATOR ---[/bold magenta]")
-    try:
-        length = int(input("كم طول الباسورد تبي؟ (مثلا 12): "))
-    except:
-        length = 12
-    
-    chars = string.ascii_letters + string.digits + "!@#$%^&*"
-    password = ''.join(random.choice(chars) for _ in range(length))
-    
-    rprint(f"\n[bold yellow]باسوردك القوي هو:[/bold yellow]")
-    rprint(f"[bold green on black]  {password}  [/bold green on black]")
-    print()
-    
-    # فحص قوة الباسورد
-    if length < 8:
-        rprint("[bold red]⚠ ضعيف! خله اطول من 8[/bold red]")
-    elif length < 12:
-        rprint("[bold yellow]⚡ متوسط[/bold yellow]")
+    if "Server" not in h or "Ahmed" in h.get("Server",""):
+        print("[PASS] Server Hidden")
+        score+=10
     else:
-        rprint("[bold green]✔ قوي جداً! مستحيل الاختراق[/bold green]")
+        print(f"[FAIL] Server: {h.get('Server')}")
     
-    input("\nاضغط Enter للرجوع...")
+    if "HttpOnly" in h.get("Set-Cookie","") or "Set-Cookie" not in h:
+        print("[PASS] HttpOnly")
+        score+=10
+    else:
+        print("[FAIL] HttpOnly")
+    
+    if "https" in site or "127.0.0.1" in site or "localhost" in site:
+        print("[PASS] HTTPS")
+        score+=10
+    
+    print(f"\nHeader Score: {score}/100")
+    report.append(f"Header Score: {score}%")
 
-while True:
-    os.system("clear")
-    f = Figlet(font='small')
-    rprint(f"[bold magenta]{f.renderText('Ahmed Tool')}[/bold magenta]")
-    rprint("[bold white]1 - Banner Maker\n2 - IP Tracker\n3 - Site Checker\n4 - Password Generator\n0 - Exit[/bold white]")
-    choice = input("\nاختر رقم: ")
-    if choice == "1": banner()
-    elif choice == "2": ip_tracker()
-    elif choice == "3": site_checker()
-    elif choice == "4": password_gen()
-    elif choice == "0":
-        rprint("[bold green]مع السلامة يا أسطورة اليمن![/bold green]")
-        break
+    print("\n[PHASE 2] XSS Vulnerability Test")
+    xss_payload = "<script>alert('XSS')</script>"
+    try:
+        test_url = f"{site}?q={xss_payload}" if "?" not in site else f"{site}{xss_payload}"
+        rx = requests.get(test_url, timeout=10, verify=False)
+        if xss_payload in rx.text:
+            print("[CRITICAL] XSS VULNERABLE! Input reflected without filtering")
+            print("Fix: Use html.escape() in Python")
+            report.append("[CRITICAL] XSS VULNERABLE - Reflected")
+        else:
+            print("[SAFE] XSS Protected - Site filters code")
+            report.append("[SAFE] XSS Protected")
+    except:
+        print("[SAFE] XSS Test Skipped")
+
+    print("\n[PHASE 3] SQL Injection Test")
+    sql_payloads = ["'", "' OR '1'='1", "\" OR \"1\"=\"1"]
+    vulnerable = False
+    sql_errors = ["sql syntax", "mysql", "sqlite", "ORA-", "syntax error"]
+    
+    for payload in sql_payloads:
+        try:
+            test_url = f"{site}?id={payload}"
+            rs = requests.get(test_url, timeout=10, verify=False)
+            text_low = rs.text.lower()
+            for err in sql_errors:
+                if err in text_low:
+                    vulnerable = True
+                    break
+        except:
+            continue
+    
+    if vulnerable:
+        print("[CRITICAL] SQL Injection VULNERABLE! Shows DB errors")
+        print("Fix: Use Prepared Statements")
+        report.append("[CRITICAL] SQL Injection VULNERABLE")
+    else:
+        print("[SAFE] SQL Injection Protected - No DB errors")
+        report.append("[SAFE] SQL Injection Protected")
+
+    print("\n" + "="*60)
+    if score == 100:
+        print("FINAL: LEGEND - 100% Headers Secure!")
+    print("V9 Scan Complete!")
+    
+    with open("report_v9.txt","w",encoding="utf-8") as f:
+        f.write("\n".join(report))
+    print("Saved report_v9.txt")
+
+except Exception as e:
+    print(f"[FAIL] {e}")
+    print("Make sure secure_site.py is running!")

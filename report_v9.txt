@@ -1,0 +1,13 @@
+Ahmed Toolkit V9 Report - 2026-10-31 22:12:22.098825
+Target: http://127.0.0.1:8000
+============================================================
+[PASS] Content-Security-Policy
+[PASS] X-Frame-Options
+[PASS] Strict-Transport-Security
+[PASS] X-Content-Type-Options
+[PASS] Referrer-Policy
+[PASS] Permissions-Policy
+[PASS] X-XSS-Protection
+Header Score: 100%
+[SAFE] XSS Protected
+[SAFE] SQL Injection Protected
