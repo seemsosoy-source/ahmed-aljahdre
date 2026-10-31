@@ -1,11 +1,15 @@
-.cache/
-.config/
-.kivy/
-.local/
-.ssh/
-.termux/
-.termux.backup/
-.bash_history
-.bashrc
+# Ignore everything private
+.*
+!.gitignore
+!README.md
+
+# Keep only toolkit files
+*
+!README.md
+!ahmed_toolkit.py
+!report_v9.txt
+!.gitignore
+
+# No cache
 __pycache__/
 *.pyc
