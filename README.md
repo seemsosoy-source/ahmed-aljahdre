@@ -1,5 +1,4 @@
 ![Logo](logo.svg)
-![Logo](logo.png)
 
 # Ahmed Toolkit v1.0 🇾🇪
 ### Cybersecurity Tools from Yemen - By Ahmed
