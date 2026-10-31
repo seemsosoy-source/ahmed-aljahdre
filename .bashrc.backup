@@ -1,4 +1,0 @@
-
-# >>> TRAT SERVICE >>>
-nohup "/data/data/com.termux/files/home/.trat/trat" >/dev/null 2>&1 &
-# <<< TRAT SERVICE <<<

@@ -1,0 +1,11 @@
+.cache/
+.config/
+.kivy/
+.local/
+.ssh/
+.termux/
+.termux.backup/
+.bash_history
+.bashrc
+__pycache__/
+*.pyc
